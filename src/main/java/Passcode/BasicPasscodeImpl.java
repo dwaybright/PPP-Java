@@ -5,15 +5,23 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.math.BigInteger;
 
-/**
- * Created by danielwaybright on 7/3/16.
- */
 public class BasicPasscodeImpl implements Passcode {
 
-    public String GetPassCode(Charset charset, SecretKey skey, IvParameterSpec ivSpec, int passcodeLength, int passcodeIndex) {
-        BigInteger divider = new BigInteger(Integer.toString(charset.getCharsetSize()));
+    private Charset charset;
+    private SecretKey skey;
+    private IvParameterSpec ivSpec;
 
+    public BasicPasscodeImpl(Charset set, SecretKey skey, IvParameterSpec ivSpec) {
+        this.charset = set;
+        this.skey = skey;
+        this.ivSpec = ivSpec;
+    }
+
+    public String GetPassCode(int passcodeLength, int passcodeIndex) {
         try {
+            // Setup the amount to divide by
+            BigInteger divider = new BigInteger(Integer.toString(charset.getCharsetSize()));
+
             // Build the Cipher
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, skey, ivSpec);
@@ -23,7 +31,7 @@ public class BasicPasscodeImpl implements Passcode {
             byte[] encrypted = cipher.doFinal(message.getBytes());
             BigInteger encryptedBigInt = new BigInteger(encrypted);
 
-            // Build passcode through successive dividing
+            // Build passcode through successive dividing of message
             StringBuilder output = new StringBuilder();
 
             for(int i=0; i < passcodeLength; i++) {
@@ -41,5 +49,11 @@ public class BasicPasscodeImpl implements Passcode {
 
         return null;
     }
+
+    public Charset GetCharset() { return this.charset; }
+
+    public SecretKey GetSecretKey() { return this.skey; }
+
+    public IvParameterSpec GetIvSpec() { return this.ivSpec; }
 
 }
